@@ -19,6 +19,11 @@ dependencyResolutionManagement {
     }
 }
 
+<<<<<<< HEAD
 rootProject.name = "datban"
 include(":app")
  
+=======
+rootProject.name = "My Application"
+include(":app")
+>>>>>>> c6c346151d64d2622d1a53aef04da78cb8c4b926

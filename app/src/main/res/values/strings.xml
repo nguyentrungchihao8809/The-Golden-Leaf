@@ -1,3 +1,7 @@
 <resources>
+<<<<<<< HEAD
     <string name="app_name">datban</string>
+=======
+    <string name="app_name">My Application</string>
+>>>>>>> c6c346151d64d2622d1a53aef04da78cb8c4b926
 </resources>

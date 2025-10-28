@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
+<<<<<<< HEAD
     <style name="Theme.Datban" parent="android:Theme.Material.Light.NoActionBar" />
+=======
+    <style name="Theme.MyApplication" parent="android:Theme.Material.Light.NoActionBar" />
+>>>>>>> c6c346151d64d2622d1a53aef04da78cb8c4b926
 </resources>
