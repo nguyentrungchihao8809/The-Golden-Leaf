@@ -1,0 +1,224 @@
+package com.example.giaodien.ui.screens
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+
+// --- Định nghĩa màu sắc y hệt ảnh ---
+
+// Màu nền chính (Dark background)
+val ScreenBackgroundColor = Color(0xFF1E1E1E)
+// Màu Top Bar
+val TopBarColor = Color(0xFF2C2C2C)
+// Màu nút (Đỏ)
+val ButtonRedColor = Color(0xFFD32F2F)
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ThanhToanScreen(
+    navController: NavController
+) {
+    Scaffold(
+        containerColor = ScreenBackgroundColor,
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        "Thanh toán",
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
+                    )
+                },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back",
+                            tint = Color.White
+                        )
+                    }
+                },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = TopBarColor
+                )
+            )
+        },
+        bottomBar = {
+            Button(
+                onClick = { /* TODO: Xử lý thanh toán */ },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
+                    .height(50.dp),
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = ButtonRedColor)
+            ) {
+                Text(
+                    "Thanh toán",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState()) // Cho phép cuộn
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Card 1: Thông tin khách hàng ---
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text("Tên: Nguyễn Văn An", color = Color.Black, fontSize = 16.sp)
+                    Divider(modifier = Modifier.padding(vertical = 12.dp), color = Color.LightGray)
+                    Text(
+                        "The Golden Leaf",
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("Chi nhánh: 333 Tô Ký, Quận 12, tp.HCM", color = Color.Gray, fontSize = 14.sp)
+                    Text("Số lượng: 5", color = Color.Gray, fontSize = 14.sp)
+                    Text("Thời gian: 20:00 Thứ 5, 02/10/2025", color = Color.Gray, fontSize = 14.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Card 2: Chi tiết món ăn ---
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(
+                        "Món ăn",
+                        color = Color.Black,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
+                    )
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    // Tiêu đề bảng
+                    Row(Modifier.fillMaxWidth()) {
+                        Text("Tên hàng", Modifier.weight(0.4f), color = Color.Gray, fontSize = 14.sp)
+                        Text("SL", Modifier.weight(0.1f), color = Color.Gray, fontSize = 14.sp)
+                        Text("Đơn giá", Modifier.weight(0.25f), color = Color.Gray, fontSize = 14.sp, textAlign = TextAlign.End)
+                        Text("Tổng tiền", Modifier.weight(0.25f), color = Color.Gray, fontSize = 14.sp, textAlign = TextAlign.End)
+                    }
+                    Divider(modifier = Modifier.padding(vertical = 8.dp), color = Color.LightGray)
+
+                    // Các món ăn (Dữ liệu tĩnh)
+                    OrderItemRow(ten = "1) Bò bít tết", sl = "1", donGia = "109.000", tongTien = "109.000")
+                    OrderItemRow(ten = "2) Salad", sl = "1", donGia = "50.000", tongTien = "50.000")
+                    OrderItemRow(ten = "3) Pudding", sl = "2", donGia = "50.000", tongTien = "100.000")
+
+                    Divider(modifier = Modifier.padding(vertical = 8.dp), color = Color.LightGray)
+
+                    // Tổng cộng
+                    Row(Modifier.fillMaxWidth()) {
+                        Text(
+                            "Tổng Cộng",
+                            Modifier.weight(0.4f),
+                            color = Color.Black,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            "4",
+                            Modifier.weight(0.1f),
+                            color = Color.Black,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Spacer(Modifier.weight(0.25f)) // Bỏ qua cột đơn giá
+                        Text(
+                            "259.000",
+                            Modifier.weight(0.25f),
+                            color = Color.Black,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.End
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Card 3: Phí tổng ---
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color.White),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(Modifier.fillMaxWidth()) {
+                        Text("Phí đặt bàn:", color = Color.Black, fontSize = 16.sp)
+                        Spacer(Modifier.weight(1f))
+                        Text("đ 200.000", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                    Row(Modifier.fillMaxWidth()) {
+                        Text("Tổng tiền món ăn:", color = Color.Black, fontSize = 16.sp)
+                        Spacer(Modifier.weight(1f))
+                        Text("đ 459.000", color = Color.Black, fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // --- Card 4: Chú ý ---
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFFFF8E1)), // Màu vàng nhạt
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    "Chú ý: phí đặt bàn sẽ được hoàn trả sau khi khách hàng nhận bàn",
+                    color = Color(0xFF6F4E00), // Màu chữ nâu đậm
+                    modifier = Modifier.padding(16.dp),
+                    fontStyle = FontStyle.Italic,
+                    fontSize = 14.sp
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp)) // Thêm khoảng trống trước nút
+        }
+    }
+}
+
+// Composable phụ để vẽ 1 hàng món ăn
+@Composable
+fun OrderItemRow(ten: String, sl: String, donGia: String, tongTien: String) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Text(ten, Modifier.weight(0.4f), color = Color.Black, fontSize = 16.sp)
+        Text(sl, Modifier.weight(0.1f), color = Color.Black, fontSize = 16.sp)
+        Text(donGia, Modifier.weight(0.25f), color = Color.Black, fontSize = 16.sp, textAlign = TextAlign.End)
+        Text(tongTien, Modifier.weight(0.25f), color = Color.Black, fontSize = 16.sp, textAlign = TextAlign.End)
+    }
+}
