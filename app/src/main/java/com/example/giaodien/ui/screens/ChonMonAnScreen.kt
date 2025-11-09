@@ -113,8 +113,8 @@ fun ChonMonAnScreen(navController: NavController,
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .weight(1f),
-                    contentPadding = PaddingValues(vertical = 8.dp)
+                        .fillMaxHeight() // chiếm toàn bộ chiều cao còn lại
+                        .padding(vertical = 8.dp)
                 ) {
                     // TRUYỀN gioHangViewModel VÀO MonAnRow
                     item { MonAnRow("Món khai vị", thucDonList.filter { it.nhom.lowercase() == "khai_vi" }, gioHangViewModel) }
@@ -180,7 +180,7 @@ fun MonAnRow(title: String, monList: List<ThucDon>, gioHangViewModel: GioHangVie
                 ) {
                     Column(modifier = Modifier.padding(8.dp)) {
                         Image(
-                            painter = rememberAsyncImagePainter("http://10.0.2.2:8080/uploads/${mon.anh}"),
+                            painter = rememberAsyncImagePainter(mon.anh),
                             contentDescription = mon.tenMon,
                             modifier = Modifier
                                 .height(80.dp)
