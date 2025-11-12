@@ -20,4 +20,11 @@ public class DatBanController {
         datBanService.saveDatBan(datBan);
         return datBan; // trả về JSON cho client
     }
+     @GetMapping("/latest")
+public DatBan getLatestDatBan(Principal principal) {
+    // bắt buộc phải có principal
+    return datBanService.getLatestDatBan(principal.getName());
+}
+
+
 }
