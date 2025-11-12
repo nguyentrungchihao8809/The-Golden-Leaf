@@ -6,6 +6,7 @@ import com.example.giaodien.data.network.RetrofitInstance// <-- CẦN IMPORT CÁ
 import com.example.giaodien.viewmodel.GioHangViewModelFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -14,6 +15,10 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -50,16 +55,21 @@ fun GioHangScreen(
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Black),
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Quay lại", tint = Color.White)
+                        Icon(
+                            Icons.Default.ArrowBack,
+                            contentDescription = "Quay lại",
+                            tint = Color.White
+                        )
                     }
                 }
             )
         },
         containerColor = Color.Black // Nền cả màn hình là Đen
     ) { innerPadding ->
-        Box(modifier = Modifier
-            .fillMaxSize()
-            .padding(innerPadding)
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
         ) {
             if (gioHangList.isEmpty()) {
                 Text(
@@ -74,8 +84,9 @@ fun GioHangScreen(
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     items(gioHangList) { item ->
-                        GioHangItemCard(item = item)
+                        GioHangItemCard(item = item, gioHangViewModel = gioHangViewModel)
                     }
+
 
                     item { Spacer(modifier = Modifier.height(10.dp)) }
 
@@ -87,7 +98,12 @@ fun GioHangScreen(
                                 .padding(vertical = 8.dp),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("TỔNG CỘNG:", style = MaterialTheme.typography.titleLarge, color = Color.White, fontWeight = FontWeight.Bold)
+                            Text(
+                                "TỔNG CỘNG:",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = Color.White,
+                                fontWeight = FontWeight.Bold
+                            )
                             Text(
                                 "${currencyFormat.format(tongTien)} VND",
                                 style = MaterialTheme.typography.titleLarge,
@@ -104,20 +120,22 @@ fun GioHangScreen(
             // Nút "Xác Nhận Đặt Món"
             Button(
                 onClick = {
-                    // 1. GỌI VIEWMODEL ĐỂ GỬI GIỎ HÀNG LÊN SERVER
                     gioHangViewModel.xacNhanDatMon(
                         onSuccess = {
-                            // 2. THÀNH CÔNG: ĐIỀU HƯỚNG VỀ TRANG CHÍNH (MAIN SCREEN)
-                            navController.popBackStack(route = Screen.Main.route, inclusive = false)
+                            navController.navigate(Screen.HoaDon.route) {
+                                popUpTo(Screen.GioHang.route) { inclusive = true }
+                            }
+
                         },
                         onError = { msg ->
-                            // TODO: Hiển thị thông báo lỗi cho người dùng (ví dụ: dùng Toast)
-                            // Hiện tại chúng ta chỉ log lỗi
                             println("Lỗi xác nhận đặt món: $msg")
                         }
                     )
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = DeepRed, contentColor = Color.White),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = DeepRed,
+                    contentColor = Color.White
+                ),
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
@@ -126,55 +144,120 @@ fun GioHangScreen(
             ) {
                 Text("Xác Nhận Đặt Món")
             }
+
         }
     }
 }
 
 @Composable
-fun GioHangItemCard(item: GioHangItem) {
+fun GioHangItemCard(item: GioHangItem, gioHangViewModel: GioHangViewModel) {
     Card(
         colors = CardDefaults.cardColors(containerColor = Color.DarkGray.copy(alpha = 0.5f)),
         modifier = Modifier
             .fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(4.dp)
+        elevation = CardDefaults.cardElevation(4.dp),
+        shape = RoundedCornerShape(8.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Image(
-                painter = rememberAsyncImagePainter("http://10.0.2.2:8080/uploads/${item.thucDon.anh}"),
-                contentDescription = item.thucDon.tenMon,
-                modifier = Modifier.size(60.dp),
-                contentScale = ContentScale.Crop
-            )
-            Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.padding(12.dp)) {
 
-            // Thông tin món ăn
-            Column(modifier = Modifier.weight(1f)) {
-                Text(item.thucDon.tenMon, style = MaterialTheme.typography.titleMedium, color = Color.White)
-                Text(
-                    "${currencyFormat.format(item.thucDon.gia)} VND",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = Color.White.copy(alpha = 0.7f)
+            // Row chính: ảnh + tên + tăng giảm
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Image(
+                    painter = rememberAsyncImagePainter(item.thucDon.anh),
+                    contentDescription = item.thucDon.tenMon,
+                    modifier = Modifier.size(60.dp),
+                    contentScale = ContentScale.Crop
                 )
+
+                Spacer(modifier = Modifier.width(12.dp))
+
+                // Thông tin món
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        item.thucDon.tenMon,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = Color.White
+                    )
+                    Text(
+                        "${currencyFormat.format(item.thucDon.gia)} VND",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = Color.White.copy(alpha = 0.7f)
+                    )
+                }
+
+                // Tăng giảm số lượng + tổng tiền
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        "${currencyFormat.format(item.thucDon.gia * item.quantity)} VND",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = BrightRed,
+                        fontWeight = FontWeight.Bold
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        // Nút giảm
+                        Button(
+                            onClick = { gioHangViewModel.giamSoLuong(item) },
+                            colors = ButtonDefaults.buttonColors(containerColor = DeepRed, contentColor = Color.White),
+                            modifier = Modifier.size(36.dp),
+                            shape = RoundedCornerShape(6.dp),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text("-", fontWeight = FontWeight.Bold)
+                        }
+
+                        Text(
+                            item.quantity.toString(),
+                            modifier = Modifier
+                                .padding(horizontal = 8.dp)
+                                .width(24.dp),
+                            color = Color.White,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                        )
+
+                        // Nút tăng
+                        Button(
+                            onClick = { gioHangViewModel.tangSoLuong(item) },
+                            colors = ButtonDefaults.buttonColors(containerColor = DeepRed, contentColor = Color.White),
+                            modifier = Modifier.size(36.dp),
+                            shape = RoundedCornerShape(6.dp),
+                            contentPadding = PaddingValues(0.dp)
+                        ) {
+                            Text("+", fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
             }
 
-            // Số lượng và Tổng tiền Item
-            Column(horizontalAlignment = Alignment.End) {
-                Text(
-                    "SL: ${item.quantity}",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = Color.White
-                )
-                Text(
-                    "${currencyFormat.format(item.thucDon.gia * item.quantity)} VND",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = DeepRed,
-                    fontWeight = FontWeight.Bold
-                )
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Thanh gỡ món
+            // Thanh gỡ món
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth() // Box chiếm full width để căn giữa
+                    .padding(top = 8.dp),
+                contentAlignment = Alignment.Center // căn giữa Row bên trong
+            ) {
+                Row(
+                    modifier = Modifier
+                        .width(140.dp) // điều chỉnh độ dài thanh gỡ món
+                        .height(40.dp)
+                        .background(Color.DarkGray.copy(alpha = 0.7f), shape = RoundedCornerShape(6.dp))
+                        .clickable { gioHangViewModel.xoaMon(item) },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center // icon + text căn giữa
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = "Gỡ món", tint = Color.White)
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text("Gỡ món", color = Color.White, fontWeight = FontWeight.Bold)
+                }
             }
         }
     }
