@@ -104,7 +104,7 @@ fun SoDoBanScreen(
                                 .fillMaxWidth()
                                 .height(50.dp),
                             shape = RoundedCornerShape(8.dp),
-                            colors = CardDefaults.cardColors(
+                            colors = CardDefaults.cardColors( //cart
                                 containerColor = if (isDisabled) Color.Gray else Color.Green
                             )
                         ) {
