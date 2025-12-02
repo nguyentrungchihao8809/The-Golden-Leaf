@@ -23,60 +23,70 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.giaodien.viewmodel.WeatherViewModel
 import kotlinx.coroutines.launch
-import com.example.giaodien.R
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
-// Thay thế bằng ID tài nguyên hình ảnh thực tế của bạn
-// Loại bỏ import R.drawable.restaurant_view gây lỗi Unresolved reference
+// Giả định bạn đã import R.drawable hợp lệ
+import com.example.giaodien.R
 
 @Composable
 fun ViTriBanScreen(
+    weatherViewModel: WeatherViewModel,
     banConLai: Int = 5,
     onBack: () -> Unit = {},
     onNext: (viTriBan: String) -> Unit = {}
 ) {
+    // 1. Lấy dữ liệu thời tiết
+    val weatherState by weatherViewModel.weather.collectAsState()
+    LaunchedEffect(Unit) {
+        weatherViewModel.loadWeather("Hanoi")
+    }
+    val nhietDo = remember(weatherState) {
+        weatherState?.main?.temp?.toInt()?.toString() ?: "--"
+    }
+    val thoiTiet = remember(weatherState) {
+        weatherState?.weather?.firstOrNull()?.description?.replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+        } ?: "Đang tải..."
+    }
+
+    // --- Dữ liệu không đổi ---
     val danhSachViTri = listOf("Ngoài trời", "Sông hồ", "Trong nhà", "Phòng riêng")
-
-    // Sử dụng ID drawable mặc định của Android để tránh lỗi 'Unresolved reference'
-
-
     val danhSachAnh = listOf(
         R.drawable.ngoaitroi,
         R.drawable.songho,
         R.drawable.trongnha,
-        R.drawable.phongrieng,
+        R.drawable.phongrieng
     )
-
     var viTriDaChon by remember { mutableStateOf(danhSachViTri[2]) }
 
     val lazyListState = rememberLazyListState()
     val coroutineScope = rememberCoroutineScope()
 
-    // --- Logic Cuộn LazyRow khi Radio Button thay đổi ---
     LaunchedEffect(viTriDaChon) {
         val index = danhSachViTri.indexOf(viTriDaChon)
         if (index != -1) {
             coroutineScope.launch {
-                // Cuộn mượt mà đến ảnh tương ứng
                 lazyListState.animateScrollToItem(index)
             }
         }
     }
 
-    // --- UI Styles ---
+    // --- UI Styles & Thời gian ---
     val headerColor = Color(0xFFE8544D)
     val backgroundColor = Color(0xFF282828)
     val buttonColor = Color(0xFFE8544D)
     val darkTextColor = Color.White
     val lightTextColor = Color.White.copy(alpha = 0.7f)
-    val nhietDo = "28°C"
-    val thoiTiet = "Ít mây"
-    val ngayThang = "03/10/2025"
-    val gio = "Thứ 6 - 16:00"
+    val ngayThang = remember { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date()) }
+    val gio = remember { SimpleDateFormat("EEEE - HH:mm", Locale("vi", "VN")).format(Date()) }
 
     Scaffold(
         topBar = {
-            // Header (giữ nguyên)
+            // Phần Header (giữ nguyên)
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -89,12 +99,7 @@ fun ViTriBanScreen(
                 IconButton(onClick = onBack) {
                     Icon(Icons.Filled.ArrowBack, contentDescription = "Quay lại", tint = darkTextColor)
                 }
-                Text(
-                    "Vị trí bàn",
-                    color = darkTextColor,
-                    fontSize = 22.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                Text("Vị trí bàn", color = darkTextColor, fontSize = 22.sp, fontWeight = FontWeight.Bold)
                 Icon(Icons.Filled.Notifications, contentDescription = "Thông báo", tint = darkTextColor)
             }
         },
@@ -105,7 +110,8 @@ fun ViTriBanScreen(
                 .fillMaxSize()
                 .padding(paddingValues)
         ) {
-            // Phần Thông tin Thời tiết/Ngày giờ
+            // Phần Thông tin Thời tiết/Ngày giờ (Đã tích hợp API)
+            // ... (Phần code này giữ nguyên)
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -119,7 +125,7 @@ fun ViTriBanScreen(
                     Spacer(Modifier.width(8.dp))
                     Column {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(nhietDo, color = darkTextColor, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
+                            Text("${nhietDo}°C", color = darkTextColor, fontSize = 28.sp, fontWeight = FontWeight.SemiBold)
                             Spacer(Modifier.width(4.dp))
                             Text("⭐", fontSize = 16.sp)
                         }
@@ -134,6 +140,7 @@ fun ViTriBanScreen(
                     }
                 }
             }
+            // --- HẾT PHẦN THỜI TIẾT ---
 
             // --- LAZY ROW cho Hình ảnh ---
             LazyRow(
@@ -145,7 +152,6 @@ fun ViTriBanScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp),
                 horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // SỬA LỖI: Chỉ định rõ index: Int, drawableId: Int
                 itemsIndexed(danhSachAnh) { index: Int, drawableId: Int ->
                     val isSelected = viTriDaChon == danhSachViTri[index]
 
@@ -156,10 +162,8 @@ fun ViTriBanScreen(
                             .clip(RoundedCornerShape(20.dp))
                             .shadow(8.dp, RoundedCornerShape(20.dp))
                             .background(Color.DarkGray)
-                            // Khi bấm ảnh, cập nhật vị trí chọn
                             .clickable { viTriDaChon = danhSachViTri[index] }
                     ) {
-                        // Thêm viền/highlight khi ảnh được chọn
                         if (isSelected) {
                             Box(modifier = Modifier
                                 .matchParentSize()
@@ -167,19 +171,16 @@ fun ViTriBanScreen(
                                 .background(headerColor.copy(alpha = 0.4f)))
                         }
 
-                        // Sử dụng Image với placeholder hợp lệ
                         Image(
                             painter = painterResource(id = drawableId),
                             contentDescription = danhSachViTri[index],
-                            contentScale = ContentScale.Crop, // Thay bằng Crop nếu ảnh của bạn là hình chữ nhật
-                            modifier = Modifier
-                                .fillMaxSize()
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
                         )
 
-                        // Overlay Text
                         Box(
                             modifier = Modifier
-                                .fillMaxSize()
+                                .matchParentSize()
                                 .background(Color.Black.copy(alpha = 0.2f), RoundedCornerShape(20.dp)),
                             contentAlignment = Alignment.BottomStart
                         ) {
@@ -194,10 +195,11 @@ fun ViTriBanScreen(
                     }
                 }
             }
+            // --- KẾT THÚC LAZY ROW ---
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Danh sách lựa chọn vị trí (Radio Button)
+            // ✅ PHẦN ĐÃ BỊ THIẾU: Danh sách lựa chọn vị trí (Radio Button)
             Column(modifier = Modifier.padding(horizontal = 16.dp)) {
                 danhSachViTri.forEach { viTri ->
                     Row(
@@ -226,6 +228,7 @@ fun ViTriBanScreen(
                     }
                 }
             }
+            // --- KẾT THÚC DANH SÁCH CHỌN ---
 
             Spacer(modifier = Modifier.weight(1f)) // Đẩy nút Tiếp tục xuống cuối
 
