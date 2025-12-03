@@ -122,9 +122,9 @@ fun NhapSoLuongScreen(
 
                         // Biểu tượng đĩa và dao nĩa
                         Image(
-                            painter = painterResource(id = R.drawable.ic_plate_cutlery), // Thay bằng drawable của bạn
+                            painter = painterResource(id = R.drawable.logo_sl), // Thay bằng drawable của bạn
                             contentDescription = "Biểu tượng đĩa",
-                            modifier = Modifier.size(90.dp)
+                            modifier = Modifier.size(200.dp)
                         )
 
                         Spacer(Modifier.height(32.dp))
@@ -174,7 +174,7 @@ fun NhapSoLuongScreen(
                             }
                         }
 
-                        Spacer(Modifier.height(24.dp))
+                        Spacer(Modifier.height(20.dp))
 
                         // Ghi chú
                         Row(
@@ -217,7 +217,7 @@ fun NhapSoLuongScreen(
                     }
                 }
 
-                Spacer(Modifier.height(32.dp))
+                Spacer(Modifier.height(40.dp))
 
                 // Nút "Tiếp tục"
                 Button(
@@ -232,7 +232,7 @@ fun NhapSoLuongScreen(
                         .padding(horizontal = 16.dp)
                 ) {
                     Text(
-                        "Tiếp tục",
+                        "Đặt bàn",
                         fontSize = 20.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.White
