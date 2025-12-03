@@ -38,4 +38,16 @@ interface ApiService {
     suspend fun postGioHang(
         @Body danhSachMon: List<GioHangMonAn>
     ): Unit
+
+            @GET("api/taikhoan/choXacNhan")
+        suspend fun getChoXacNhan(): List<LichSuDonDayDuDTO>
+
+        @GET("api/taikhoan/lichSuDonDat")
+        suspend fun getLichSuDonDat(): List<LichSuDonDayDuDTO>
+
+        @GET("api/dondat/{idDat}")
+        suspend fun getChiTietDon(@Path("idDat") idDat: Long): LichSuDonDayDuDTO
+
+        @DELETE("api/taikhoan/huyDon/{idDat}")
+        suspend fun huyDonDat(@Path("idDat") idDat: Long)
 }
