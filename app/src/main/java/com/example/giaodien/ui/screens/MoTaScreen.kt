@@ -1,5 +1,6 @@
 package com.example.giaodien.ui.screens
 
+import DanhGiaViewModelFactory
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -11,6 +12,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -26,8 +28,13 @@ import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.example.giaodien.data.model.BinhLuan
 import com.example.giaodien.data.model.ThucDon
+import com.example.giaodien.data.network.RetrofitInstance
+import com.example.giaodien.data.repository.DanhGiaRepository
 import com.example.giaodien.viewmodel.BinhLuanViewModel
+import com.example.giaodien.viewmodel.DanhGiaViewModel
 import com.example.giaodien.viewmodel.ThucDonViewModel
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.launch
 
 @Composable
 fun MoTaScreen(
@@ -35,19 +42,39 @@ fun MoTaScreen(
     navController: NavController,
     onBack: () -> Unit, // Thêm lambda để xử lý sự kiện quay lại
     thucDonViewModel: ThucDonViewModel = viewModel(),
-    binhLuanViewModel: BinhLuanViewModel = viewModel()
+    binhLuanViewModel: BinhLuanViewModel = viewModel(),
+    // <-- thêm ViewModel đánh giá
+
 ) {
+    val danhGiaRepo = DanhGiaRepository(RetrofitInstance.api)
+    val danhGiaViewModel: DanhGiaViewModel = viewModel(
+        factory = DanhGiaViewModelFactory(danhGiaRepo)
+    )
     // Load danh sách món và bình luận
     LaunchedEffect(id) {
         thucDonViewModel.loadThucDon()
         binhLuanViewModel.loadBinhLuan(id)
+        danhGiaViewModel.loadDanhGia(id) // <-- load đánh giá
+
     }
+
 
     val thucDonList by thucDonViewModel.thucDonList.collectAsState()
     val mon = thucDonList.find { it.idThucDon == id }
 
     val binhLuanList by binhLuanViewModel.binhLuanList.collectAsState()
     val loadingBinhLuan by binhLuanViewModel.loading.collectAsState()
+
+    val danhGiaList by danhGiaViewModel.danhGiaList.collectAsState()
+    val loadingDanhGia by danhGiaViewModel.loading.collectAsState()
+
+// Lấy đánh giá của user hiện tại, nếu có
+    val currentUserEmail = FirebaseAuth.getInstance().currentUser?.email ?: ""
+    val userRating = danhGiaList.find { it.userEmail == currentUserEmail }?.soSao ?: 0
+    val userRated = userRating > 0
+
+// Dùng state để giữ số sao nếu người dùng chưa đánh giá
+    var newRating by remember { mutableStateOf(0) }
 
     // Lấy các món cùng nhóm (khác chính món đang xem)
     val monCungNhom = mon?.let { current ->
@@ -172,6 +199,61 @@ fun MoTaScreen(
 
                     Spacer(modifier = Modifier.height(32.dp))
                 }
+                // Hiển thị trung bình đánh giá
+                val trungBinhSao = if (danhGiaList.isEmpty()) 0f
+                else danhGiaList.map { it.soSao }.average().toFloat()
+
+
+
+                Text(
+                    text = "Đánh giá trung bình: ${"%.1f".format(trungBinhSao)} sao",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+
+
+                val scope = rememberCoroutineScope()
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    (1..5).forEach { i ->
+                        Icon(
+                            imageVector = Icons.Default.Star,
+                            contentDescription = null,
+                            tint = if (userRated) {
+                                if (i <= userRating) Color.Yellow else Color.Gray
+                            } else {
+                                if (i <= newRating) Color.Yellow else Color.Gray
+                            },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clickable(enabled = !userRated) { // Nếu đã đánh giá thì không click
+                                    newRating = i
+                                }
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    if (!userRated) {
+                        val scope = rememberCoroutineScope()
+                        Button(onClick = {
+                            if (newRating > 0) {
+                                scope.launch {
+                                    danhGiaViewModel.addDanhGia(id, currentUserEmail, newRating)
+                                    danhGiaViewModel.loadDanhGia(id) // reload danh sách từ backend
+                                }
+                            }
+                        }) {
+                            Text("Gửi đánh giá")
+                        }
+                    } else {
+                        Text("Bạn đã đánh giá: $userRating sao")
+                    }
+                }
+
+
+                Spacer(modifier = Modifier.height(24.dp))
 
                 // Bình luận
                 Text(
